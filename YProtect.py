@@ -16,7 +16,7 @@ xp_path = '/System/Library/CoreServices/CoreTypes.bundle/Contents/Resources/XPro
 xpm_path = '/System/Library/CoreServices/CoreTypes.bundle/Contents/Resources/XProtect.meta.plist'
 
 # map os versions to numbers used in XProtect URL
-version_map = {'6': '1', '7': '2', '8': 3}
+version_map = {'6': '1', '7': '2', '8': '3'}
 
 # slice out the 6,7,or 8 from first tuple returned by mac_ver
 os_vers = mac_ver()[0][3:4]
