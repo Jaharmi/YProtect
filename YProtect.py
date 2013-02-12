@@ -67,31 +67,26 @@ except:
      syslog.syslog(syslog.LOG_ALERT, 'There was a problem getting the installed Java version. Maybe it is not installed?')
 
 
-## Check if remote_data and local_data are not the same.
-## If they are not then we will write a new one...assuming 
-## for the time being that Apple only puts real malware
-## in there then we can trust it. *crosses fingers*
+# Check if remote_data and local_data are not the same.
+# If they are not then we will write a new one...assuming 
+# for the time being that Apple only puts real malware
+# in there then we can trust it. *crosses fingers*
 if remote_data != local_data:
     plist_lib.writePlist(remote_data, xp_path)
     os.chown(xp_path, 0, 0)
 
-## Check if len(remote_meta) + 1 == len(local_meta) this means Apple
-## did not add any additional software to the checks, the +1 is for the 
-## lack of 'LastModification' key in remote_meta
+# Check if len(remote_meta) + 1 == len(local_meta) this means Apple
+# did not add any additional software to the checks, the +1 is for the 
+# lack of 'LastModification' key in remote_meta
 if len(remote_meta) + 1 != len(local_meta):
-## Then check the version values of the various keys. If they are
-## different then either Apple has updated the list or an admin
-## has changed the Version by hand.
     syslog.syslog(syslog.LOG_ALERT, 'Apple may have changed the software in the meta list...better check it')
+# Check the len() of the plugin blacklist just to be sure Apple didn't add anything here either
 elif len(remote_meta['PlugInBlacklist']['10']) != len(local_meta['PlugInBlacklist']['10']):
      syslog.syslog(syslog.LOG_ALERT, 'Apple may have changed the software in PlugInBlacklist...better check it')
-## This path seems pointless...why not just drop the meta and then
-## write the data plist out?
 else:
-## Maybe I can get the installed versions from the listed software and
-## compare the versions. Then only write out that bit if it will NOT break.
     new_local_meta = local_meta
-
+    # make a new XProtect.meta.plist using installed version numbers or the number from Apple if installed_vers
+    # cannot be found
     if installed_flash_vers:
         local_blacklist['com.macromedia.Flash Player.plugin']['MinimumPlugInBundleVersion'] = installed_flash_vers
     else:
@@ -103,12 +98,13 @@ else:
         local_blacklist['com.oracle.java.JavaAppletPlugin']['MinimumPlugInBundleVersion'] = remote_blacklist['com.oracle.java.JavaAppletPlugin']['MinimumPlugInBundleVersion']
 
     new_local_meta['PlugInBlacklist']['10'] = local_blacklist    
+    # set the LastModification to the current time in the same format that Apple uses
     new_local_meta['LastModification'] = time.strftime('%a, %d %b %Y %H:%M:%S GMT', time.gmtime())
-# I can't find where JavaWebComponentVersion can be checked
-# The closest I got was CFBundleGetInfoString in /System/Library/Java/JavaVirtualMachines/1.6.0.jdk/Contents/Info.plist
-# but on my machine it is 'Java for Mac OS X (1.6.0_37-b06-434)' not *435 and I have the latest Java installed
-# so I dunno. I did all sorts of find -exec greps to try and weed it out...*shrug* Just going
-# to do the Neagle thing and delete it for now.
+    # I can't find where JavaWebComponentVersion can be checked
+    # The closest I got was CFBundleGetInfoString in /System/Library/Java/JavaVirtualMachines/1.6.0.jdk/Contents/Info.plist
+    # but on my machine it is 'Java for Mac OS X (1.6.0_37-b06-434)' not *435 and I have the latest Java installed
+    # so I dunno. I did all sorts of find -exec greps to try and weed it out...*shrug* Just going
+    # to do the Neagle thing and delete it for now.
     del new_local_meta['JavaWebComponentVersionMinimum']
     plistlib.writePlist(new_local_meta, xpm_path)
     os.chown(xpm_path, 0, 0)
