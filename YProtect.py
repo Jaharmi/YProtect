@@ -28,7 +28,7 @@ plist_url = 'http://configuration.apple.com/configurations/macosx/xprotect/%s/cl
 try:
     site = urllib.urlopen(plist_url)
 except:
-    syslog.syslog(syslog.LOG_CRIT, 'Could not open plist_url')
+    syslog.syslog(syslog.LOG_CRIT, 'Could not open plist_url!')
 
 if site:
     # read site into a new string object called
