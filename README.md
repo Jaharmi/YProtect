@@ -3,15 +3,15 @@ YProtect
 
 Python replacement for XProtect.
 
-Intended to be a replacement for XProtect after disabling it per the instructions shared by Greg Neagle [here][disable]
+Intended to be a replacement for XProtect after disabling it per the instructions shared by Greg Neagle [here][disable].
 
-The code for getting the plists from Apple etc. was mostly stolen from Tim Sutton's work on [XProtectPackager][tim_pkg]
+The code for getting the plists from Apple etc. is mostly from Tim Sutton's work on [XProtectPackager][tim_pkg].
 
 I am planning on setting it up via launchd to run every 24-hours just like XProtect does now.
 
 A pkg will be coming along soon with a preflight script to disable XProtect, install the launchd plist etc. I probably won't get to that until Thursday or Friday.
 
-Please feel free to commit and issue pull requests. I am a Python nüb :)
+Please feel free to commit and issue pull requests. I am a Python nüb. :)
 
 [disable]: http://managingosx.wordpress.com/2013/01/31/disabled-java-plugins-xprotect-updater/
 [tim_pkg]: https://github.com/timsutton/XProtectPackager
