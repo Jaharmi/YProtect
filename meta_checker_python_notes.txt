@@ -1,0 +1,98 @@
+# get OS subversion in Python
+# http://stackoverflow.com/questions/1777344/how-to-detect-mac-os-version-using-python
+
+>>> import platform
+>>> platform.mac_ver()
+('10.8.3', ('', '', ''), 'x86_64')
+>>> platform.mac_ver()[0]
+'10.8.3'
+>>> platform.mac_ver()[0][3:4]
+'8'
+
+# map the OS Version to key values that we will use to get the proper URL for XProtect
+
+>>> version_map = {'6': '1', '7': '2', '8': '3'}
+>>> version_map
+{'8': '3', '7': '2', '6': '1'}
+>>> version_map['6']
+'1'
+>>> mac_ver()
+('10.8.3', ('', '', ''), 'x86_64')
+>>> os_vers = mac_ver()[0][3:4]
+>>> os_vers
+'8'
+>>> version_map[os_vers]
+'3'
+
+>>> import urllib
+>>> help(urllib.urlopen)
+Help on function urlopen in module urllib:
+
+urlopen(url, data=None, proxies=None)
+    Create a file-like object for the specified URL to read from.
+
+>>> print 'http://configuration.apple.com/configurations/macosx/xprotect/%s/clientConfiguration.plist' % version_map[os_vers]
+http://configuration.apple.com/configurations/macosx/xprotect/3/clientConfiguration.plist
+
+>>> plist_url = 'http://configuration.apple.com/configurations/macosx/xprotect/%s/clientConfiguration.plist' % version_map[os_vers]
+>>> plist_url
+'http://configuration.apple.com/configurations/macosx/xprotect/3/clientConfiguration.plist'
+
+>>> site = urllib.urlopen(plist_url)
+>>> help(urllib.urlopen)
+Help on function urlopen in module urllib:
+
+urlopen(url, data=None, proxies=None)
+    Create a file-like object for the specified URL to read from.
+
+>>> alldata = site.read()
+>>> alldata
+'----- BEGIN SIGNATURE -----\nMIAGCSqGSIb3DQEHAqCAM
+...etc...etc...
+ 'com.apple.application-bundle'}, 'Description': 'OSX.SMSSend.i'}]}
+
+>>> start = alldata.find("<?xml")
+>>> start
+4007 #character index?
+
+>>> import plistlib
+>>> config_plist = plistlib.readPlistFromString(alldata[start:])
+>>> config_plist
+{'meta': {'Version': 2029, 'PlugInBlacklist':
+...etc...etc...
+'Description': 'OSX.SMSSend.i'}]}
+
+>>> config_plist['meta']
+{'Version': 2029, 'PlugInBlacklist': {'10': {'com.oracle.java.JavaAppletPlugin': {'MinimumPlugInBundleVersion': '1.7.11.22'}, 'com.macromedia.Flash Player.plugin': {'MinimumPlugInBundleVersion': '11.5.502.149'}}}, 'JavaWebComponentVersionMinimum': '1.6.0_37-b06-435'}
+>>> type(config_plist)
+<class 'plistlib._InternalDict'>
+>>> type(config_plist['meta'])
+<class 'plistlib._InternalDict'>
+>>> config_plist['meta'].items()
+[('Version', 2029), ('PlugInBlacklist', {'10': {'com.oracle.java.JavaAppletPlugin': {'MinimumPlugInBundleVersion': '1.7.11.22'}, 'com.macromedia.Flash Player.plugin': {'MinimumPlugInBundleVersion': '11.5.502.149'}}}), ('JavaWebComponentVersionMinimum', '1.6.0_37-b06-435')]
+>>> config_plist['meta'].keys()
+['Version', 'PlugInBlacklist', 'JavaWebComponentVersionMinimum']
+
+>>> url_plist['meta']
+{'Version': 2029, 'PlugInBlacklist': {'10': {'com.oracle.java.JavaAppletPlugin': {'MinimumPlugInBundleVersion': '1.7.11.22'}, 'com.macromedia.Flash Player.plugin': {'MinimumPlugInBundleVersion': '11.5.502.149'}}}, 'JavaWebComponentVersionMinimum': '1.6.0_37-b06-435'}
+
+>> local_meta = plistlib.readPlist('/System/Library/CoreServices/CoreTypes.bundle/Contents/Resources/XProtect.meta.plist')
+>>> local_meta
+{'Version': 2029, 'LastModification': 'Fri, 08 Feb 2013 00:54:09 GMT', 'JavaWebComponentVersionMinimum': '1.6.0_37-b06-435', 'PlugInBlacklist': {'10': {'com.oracle.java.JavaAppletPlugin': {'MinimumPlugInBundleVersion': '1.7.11.22'}, 'com.macromedia.Flash Player.plugin': {'MinimumPlugInBundleVersion': '11.5.502.149'}}}}
+>>> url_plist['meta'] == local_meta
+False
+
+>>> url_plist['meta']['Version']
+2029
+>>> url_plist['meta']['Version'] == local_meta['Version']
+True
+
+>>> installed_java_vers = plistlib.readPlist('/Library/Internet Plug-Ins/JavaAppletPlugin.plugin/Contents/Info.plist')
+>>> installed_java_vers.keys()
+['SUEnableAutomaticChecks', 'SUFeedURL', 'WebPluginDescription', 'CFBundleShortVersionString', 'SUPublicDSAKeyFile', 'CFBundleInfoDictionaryVersion', 'CFBundleIconFile', 'CFBundleGetInfoString', 'CFBundleIdentifier', 'WebPluginMIMETypes', 'CFBundleDevelopmentRegion', 'CFBundleExecutable', 'CFBundleName', 'SUScheduledCheckInterval', 'CFBundlePackageType', 'WebPluginName', 'CFBundleVersion']
+>>> installed_java_vers['CFBundleVersion']
+'1.7.13.20'
+
+# http://stackoverflow.com/questions/2244153/how-to-log-python-program-activity-in-mac-os-x
+>>> import syslog
+>>> syslog.syslog(syslog.LOG_ALERT, "No Installed Java plist found!")
