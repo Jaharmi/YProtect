@@ -81,7 +81,7 @@ if remote_data != local_data:
 if len(remote_meta) + 1 != len(local_meta):
     syslog.syslog(syslog.LOG_ALERT, 'Apple may have changed the software in the meta list...better check it')
 # Check the len() of the plugin blacklist just to be sure Apple didn't add anything here either
-elif len(remote_meta['PlugInBlacklist']['10']) != len(local_meta['PlugInBlacklist']['10']):
+elif len(remote_blacklist) != len(local_blacklist):
      syslog.syslog(syslog.LOG_ALERT, 'Apple may have changed the software in PlugInBlacklist...better check it')
 else:
     new_local_meta = local_meta
